@@ -32,6 +32,31 @@ def calculate_weight_vector(A, lam, p, Y):
     return np.dot(np.dot(np.linalg.inv(np.dot(A_T, A) + np.dot(lam, I)), A_T), Y)
 
 
+def create_polynomial_model(x_training, y_training, p, lam):
+    # Generate design matrix A for polynomial basis
+    polynomial_locs = [n for n in range(1, p + 1)]
+    A = make_design(x_training, polynomial_basis_fn, polynomial_locs)
+
+    # Calculate W and flatten
+    W = calculate_weight_vector(A, lam, p, y_training)
+    W = [item for sublist in W for item in sublist]
+
+    return A, W
+
+
+def create_gaussian_model(x_training, y_training, p, lam):
+    # Generate design matrix A for gaussian radial basis
+    # Centroids are p equally spaced between 0 and 1 (excluding 0 and 1)
+    centroid_locs = np.linspace(0, 1, p+2)[1:-1]
+    A = make_design(x_training, gaussian_basis_fn, centroid_locs)
+
+    # Calculate W and flatten
+    W = calculate_weight_vector(A, lam, p, y_training)
+    W = [item for sublist in W for item in sublist]
+
+    return A, W
+
+
 def run_linear_regression(n=15, p=5, lam=0):
     """ Executes Linear Regression
 
@@ -49,23 +74,15 @@ def run_linear_regression(n=15, p=5, lam=0):
     noise = np.reshape(np.random.normal(0, 0.1, n), (n, 1))
     y_training = four_pi_sin(x_training) + noise
 
-    # Generate design matrix A for polynomial basis
-    polynomial_locs = [n for n in range(1, p + 1)]
-    A = make_design(x_training, polynomial_basis_fn, polynomial_locs)
-
-    # Calculate W and flatten
-    W = calculate_weight_vector(A, lam, p, y_training)
-    W = [item for sublist in W for item in sublist]
-
-    # Calculate values to plot the actual fitted line
-    x_vals = np.linspace(0, x_training[-1], 1000)
-    y = np.array([np.sum(np.array([W[i] * (j ** i) for i in range(len(W))])) for j in x_vals])
+    # Return weights for polynomial model
+    A, W = create_gaussian_model(x_training, y_training, p, lam)
 
     # Plot model and training data
-    plt.plot(x_vals - np.mean(x_vals), y - np.mean(y), label="Best Fit")
+    y_vals = np.dot(A, W)
+    plt.plot(x_training - np.mean(x_training), y_vals - np.mean(y_vals), label="Best Fit")
     plt.scatter(x_training - np.mean(x_training), y_training - np.mean(y_training), c='r', marker='X', label="Training Data")
     plt.legend()
     plt.show()
 
 
-run_linear_regression(n=15, p=8)
+run_linear_regression(n=1000, p=10)
