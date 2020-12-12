@@ -41,7 +41,7 @@ def create_polynomial_model(x_training, y_training, p, lam):
     W = calculate_weight_vector(A, lam, p, y_training)
     W = [item for sublist in W for item in sublist]
 
-    return A, W
+    return A, W, polynomial_locs
 
 
 def create_gaussian_model(x_training, y_training, p, lam):
@@ -54,7 +54,7 @@ def create_gaussian_model(x_training, y_training, p, lam):
     W = calculate_weight_vector(A, lam, p, y_training)
     W = [item for sublist in W for item in sublist]
 
-    return A, W
+    return A, W, centroid_locs
 
 
 def run_linear_regression(n=15, p=5, lam=0):
@@ -64,7 +64,7 @@ def run_linear_regression(n=15, p=5, lam=0):
 
     """
     # Set random seed for sanity
-    np.random.seed(11)
+    np.random.seed(0)
 
     # Generate n random points from 0 - 1
     rn = np.random.uniform(0, 1, n)
@@ -74,15 +74,22 @@ def run_linear_regression(n=15, p=5, lam=0):
     noise = np.reshape(np.random.normal(0, 0.1, n), (n, 1))
     y_training = four_pi_sin(x_training) + noise
 
+
     # Return weights for polynomial model
-    A, W = create_gaussian_model(x_training, y_training, p, lam)
+    A, W, locs = create_gaussian_model(x_training, y_training, p, lam)
+
+    # Create line of best fit
+    z = np.reshape(np.sort(np.linspace(0, 1, 1000), axis=0), (1000, 1))
+    A2 = make_design(z, gaussian_basis_fn, locs)
+    y_vals2 = np.dot(A2, W)
+
 
     # Plot model and training data
     y_vals = np.dot(A, W)
-    plt.plot(x_training - np.mean(x_training), y_vals - np.mean(y_vals), label="Best Fit")
-    plt.scatter(x_training - np.mean(x_training), y_training - np.mean(y_training), c='r', marker='X', label="Training Data")
+    plt.plot(z, y_vals2, label="Best Fit")
+    plt.scatter(x_training , y_training, c='r', marker='X', label="Training Data")
     plt.legend()
     plt.show()
 
 
-run_linear_regression(n=1000, p=10)
+run_linear_regression(n=25, p=10)
