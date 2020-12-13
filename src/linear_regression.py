@@ -94,27 +94,9 @@ def run_linear_regression(n=15, p=5, lam=0):
     plt.show()
 
 
-def calculate_loss(basis_fn, x_training, x_test, y_training, y_test, locs, lam=0):
-    pass
-
-    # Calculate line of best fit values
-    # x_best = np.reshape(np.sort(np.linspace(0, 1, 1000), axis=0), (1000, 1))
-    # A_best = make_design(x_best, basis_fn, locs)
-    # y_best = np.dot(A_best, W)
-
-
-    # Plot model and training data
-    # plt.plot(x_best, y_best, label="Best Fit")
-    # plt.scatter(x_training, y_training, c='r', marker='X', label="Training Data")
-    # plt.scatter(x_test, y_test, c='b', marker='X', label="Test Data")
-    # plt.scatter(x_test, y_predicted, c='g', marker='X', label="Predicted Data")
-    # plt.legend()
-    # plt.show()
-
-
 def run_regression_training_split_p(test_size=0.33, n=30, p=10, lam=0):
     # Set random seed for sanity
-    np.random.seed(1)
+    np.random.seed(0)
     # Generate n random points from 0 - 1
     rn = np.random.uniform(0, 1, n)
     x_data = np.reshape(np.sort(rn, axis=0), (n, 1))
@@ -142,16 +124,59 @@ def run_regression_training_split_p(test_size=0.33, n=30, p=10, lam=0):
 
             loss_values.append(np.log(calculate_model_loss(y_test, y_predicted, W, lam)))
 
+        from matplotlib.pyplot import figure
+        figure(num=None, figsize=(6, 4), dpi=80, facecolor='w', edgecolor='k')
         x_values = range(p+1)
         plt.plot(x_values, loss_values)
         plt.xticks(x_values[0::2])
 
         plt.xlabel("Number of basis functions (p)")
-        plt.ylabel("Average log squared loss")
+        plt.ylabel("Log mean squared loss")
 
         plt.show()
 
 
+def run_regression_training_split_lambda(test_size=0.33, n=30, p=10):
+    # Set random seed for sanity
+    np.random.seed(0)
+    # Generate n random points from 0 - 1
+    rn = np.random.uniform(0, 1, n)
+    x_data = np.reshape(np.sort(rn, axis=0), (n, 1))
+    # Calculate y values and add noise
+    noise = np.reshape(np.random.normal(0, 0.1, n), (n, 1))
+    y_data = four_pi_sin(x_data) + noise
+
+    # Split data into training and test sets
+    x_training, x_test, y_training, y_test = train_test_split(x_data, y_data, test_size=test_size)
+
+    lambdas = [math.exp(x) for x in range(-30, -5)]
+    for basis_fn in [polynomial_basis_fn, gaussian_basis_fn]:
+        loss_values = []
+        for lam in lambdas:
+            # Generate the model for this p
+            if basis_fn == polynomial_basis_fn:
+                # Return weights for polynomial model
+                A, W, locs = create_polynomial_model(x_training, y_training, p, lam)
+            else:
+                # Return weights for gaussian model
+                A, W, locs = create_gaussian_model(x_training, y_training, p, lam)
+
+            # Calculate predicted test data values
+            A_test = make_design(x_test, basis_fn, locs)
+            y_predicted = np.dot(A_test, W)
+
+            loss_values.append(np.log(calculate_model_loss(y_test, y_predicted, W, lam)))
+
+        from matplotlib.pyplot import figure
+        figure(num=None, figsize=(6, 4), dpi=80, facecolor='w', edgecolor='k')
+        x_values = range(-30, -5)
+        plt.plot(x_values, loss_values)
+        plt.xticks(x_values[0::2])
+
+        plt.xlabel("Log strength of regularisation (λ)")
+        plt.ylabel("Log mean squared loss")
+
+        plt.show()
+
 # run_linear_regression(n=25, p=10)
-run_regression_training_split_p(n=30, p=20)
-run_regression_training_split_p(n=30, p=20)
+run_regression_training_split_lambda(n=30, p=9)
