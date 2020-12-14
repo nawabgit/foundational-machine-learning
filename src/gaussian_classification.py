@@ -19,25 +19,29 @@ def calculate_fisher_score(mu_a, mu_b, s_a, s_b, n_a, n_b):
 figure(num=None, figsize=(6, 4), dpi=80, facecolor='w', edgecolor='k')
 
 
-def run_project_gaussian():
+def run_project_gaussian(n):
     # Generate first gaussian
-    points1 = generate_gaussian_data(1000, [2, 2], [[3, 2], [2, 3]])
+    points1 = generate_gaussian_data(n, [2, 2], [[3, 2], [2, 3]])
     #plt.plot(points1[0], points1[1], 'rx')
 
     # Generate second gaussian
-    points2 = generate_gaussian_data(1000, [7, 7], [[3, 2], [2, 3]])
+    points2 = generate_gaussian_data(n, [7, 7], [[3, 2], [2, 3]])
     #plt.plot(points2[0], points2[1], 'bx')
 
     # Project to lower dimension
-    w = [-1.0173001,  -0.98239529]
+    w = [1, 0]
     projected1 = calculate_projected_y(w, points1)
     projected2 = calculate_projected_y(w, points2)
 
     projected = np.concatenate((projected1, projected2))
-    plt.hist(projected, range=(-30, 30), bins=50, color="r")
+    #plt.hist(projected, range=(-30, 30), bins=50, color="r")
     #plt.hist(projected1, range=(-30, 30), bins=200, color="r")
     #plt.hist(projected2, range=(-10, 30), bins=200, color="r")
-    plt.show()
+    #plt.show()
+    print("mu a = " + str([np.mean(points1[0]), np.mean(points1[1])]))
+    print("mu b = " + str([np.mean(points2[0]), np.mean(points2[1])]))
+    print("cov a = " + str(np.cov(points1)))
+    print("cov b = " + str(np.cov(points2)))
 
 
 def run_compute_best_fisher(n):
@@ -49,7 +53,7 @@ def run_compute_best_fisher(n):
     points2 = generate_gaussian_data(n, [7, 7], [[3, 2],
                                                  [2, 3]])
 
-    w = np.array((1, 1)).T
+    w = np.array((1, 0)).T
     scores = []
     # For every degree, calculate fisher score
     best = 0
@@ -77,7 +81,8 @@ def run_compute_best_fisher(n):
     plt.xlabel("Direction vector (θ)")
     plt.ylabel("Fisher Score")
     plt.show()
-    print(best_w)
+    print("w* = " + np.array2string(best_w))
 
-run_project_gaussian()
-run_compute_best_fisher(1000)
+
+run_project_gaussian(1000)
+#run_compute_best_fisher(1000)
