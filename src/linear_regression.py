@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import autograd.numpy as anp
-from autograd import grad
 from sklearn.model_selection import train_test_split
 import math
 

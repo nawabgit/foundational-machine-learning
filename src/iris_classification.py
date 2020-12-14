@@ -45,15 +45,8 @@ eig_pairs = [(np.abs(eig_vals[i]), eig_vecs[:,i]) for i in range(len(eig_vals))]
 # Sort the (eigenvalue, eigenvector) tuples from high to low
 eig_pairs = sorted(eig_pairs, key=lambda k: k[0], reverse=True)
 
-# Visually confirm that the list is correctly sorted by decreasing eigenvalues
-
-print('Eigenvalues in decreasing order:\n')
-for i in eig_pairs:
-    print(i[0], i[1])
-
+# Choose which eigenvector to use
 w = eig_pairs[0][1]
-
-classes = [setosa, versicolor, virginica]
 projected1 = np.dot(setosa, w)
 projected2 = np.dot(versicolor, w)
 projected3 = np.dot(virginica, w)
@@ -62,4 +55,3 @@ plt.hist(projected2, range=(-2, 2), bins="auto", alpha=0.5, color="g", label='ve
 plt.hist(projected3, range=(-2, 2), bins="auto", alpha=0.5, color="b", label='virginica')
 plt.legend(loc='upper right')
 plt.show()
-import pdb;pdb.set_trace()

@@ -20,9 +20,9 @@ def calculate_fisher_score(mu_a, mu_b, s_a, s_b, n_a, n_b):
     return (mu_a - mu_b)**2 / ((n_a / (n_a + n_b))*(s_a**2) + (n_b / (n_a + n_b))*(s_b**2))
 
 
-def calculate_odds(point, mu, S, points1, points2):
+def calculate_odds(point, mu, S, n_c, n_other):
     dist = sp.multivariate_normal(mu, S)
-    p_c = len(points1) / len(points2)
+    p_c = n_c / n_other
     p_x_c = dist.pdf(point)
 
     return p_c * p_x_c
@@ -100,13 +100,13 @@ def run_decision_boundary(mu_a, mu_b, S_a, S_b, n_a, n_b):
     @np.vectorize
     def calculate_log(x, y):
         point = np.array([x, y])
-        odds = calculate_odds(point, mu_a, S_a, points1, points2) / calculate_odds(point, mu_b, S_b, points2, points1)
+        odds = calculate_odds(point, mu_a, S_a, n_a, n_b) / calculate_odds(point, mu_b, S_b, n_b, n_a)
         logodds = np.log(odds)
         return logodds
 
     X, Y = np.mgrid[-10:20, -10:20]
-    Z = calculate_log(X,Y)
-    levels = [-300, 0, 300]
+    Z = calculate_log(X, Y)
+    levels = [-200, 0, 200]
 
     # Generate gaussian contours
     pos = np.empty(X.shape + (2,))
@@ -140,16 +140,9 @@ def run_decision_boundary(mu_a, mu_b, S_a, S_b, n_a, n_b):
     print("S_a = " + str(np.cov(points1)))
     print("S_b = " + str(np.cov(points2)))
 
-    @np.vectorize
-    def calculate_log(x, y):
-        point = np.array([x, y])
-        odds = calculate_odds(point, mu_a, S_a, points1, points2) / calculate_odds(point, mu_b, S_b, points2, points1)
-        logodds = np.log(odds)
-        return logodds
-
-    X, Y = np.mgrid[-15:20, -15:20]
+    X, Y = np.mgrid[-10:20, -10:20]
     Z = calculate_log(X,Y)
-    levels = [-300, 0, 300]
+    levels = [-200, 0, 200]
 
     # Generate gaussian contours
     pos = np.empty(X.shape + (2,))
@@ -179,13 +172,13 @@ n_a, n_b = 1000, 1000
 
 mu_a = [2, 2]
 mu_b = [7, 7]
-S_a = [[3, 1],
-       [1, 3]]
-S_b = [[3, 1],
-       [1, 3]]
+S_a = [[3, 2],
+       [2, 3]]
+S_b = [[3, 2],
+       [2, 3]]
 
 #run_project_gaussian(mu_a, mu_b, S_a, S_b, n_a, n_b)
 #run_compute_best_fisher(mu_a, mu_b, S_a, S_b, n_a, n_b)
 
 n_a, n_b = 10, 10
-#run_decision_boundary(mu_a, mu_b, S_a, S_b, n_a, n_b)
+run_decision_boundary(mu_a, mu_b, S_a, S_b, n_a, n_b)
